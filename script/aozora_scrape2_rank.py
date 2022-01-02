@@ -9,17 +9,20 @@ def scrape_rank(ranking_url, savefilename):
         res = urllib.request.urlopen(url)
         soup = BeautifulSoup(res, "html.parser")
 
-        table = soup.findAll("table", {"class":"rank_table"})[0]
+        table = soup.findAll("table", {"class":"list"})[0]
         rows = table.findAll("tr")
 
-        writer = csv.writer(file)
+        writer = csv.writer(file, delimiter="\t")
         for row in rows:
             csvRow = []
             for cell in row.findAll(['td', 'th']):
-                csvRow.append(cell.get_text())
+                ctext = cell.get_text().strip()
+                if cell.find("a") is not None:
+                    ctext = ctext +","+ cell.find("a").get("href")
+                csvRow.append(ctext)
             writer.writerow(csvRow)
         
 
 if __name__ == '__main__':
-    url = "https://yomou.syosetu.com/rank/list/type/total_total/"
-    scrape_rank(url, "data/narou_rank_total_total.tsv")
+    url = "https://www.aozora.gr.jp/access_ranking/2020_txt.html"
+    scrape_rank(url, "data/aozora_rank_2020_total2.tsv")
