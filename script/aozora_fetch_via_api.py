@@ -7,19 +7,29 @@ from bs4 import BeautifulSoup
 
 
 def fetch_via_api(book_id, savefilename):
+    title = ""
     with open(savefilename, "w", encoding="utf-8") as f:
         res = requests.get("http://pubserver2.herokuapp.com/api/v0.1/books/{}/content?format=html".format(book_id))
         soup = BeautifulSoup(res.text, "html.parser")
         for tag in soup.find_all(["rt", "rp"]):
             tag.decompose() # ルビを削除
         
-        try:
+        # タイトル取得
+        if soup.find("title") is None:
+            print("-"*10, book_id, "no title", "-"*10)
+            print(soup)
+            title = "[None]"
+        else:
             title = soup.find("title").get_text()
-            main_text = soup.find("div","main_text").text
-            f.write(main_text)
-        except AttributeError:
+
+        # 本文取得
+        if soup.find("div","main_text") is None:
+            print("-"*10, book_id, "no main_text", "-"*10)
             print(soup)
             return title+"\t[Failed]"
+        
+        main_text = soup.find("div","main_text").text
+        f.write(main_text)
 
     return title
 
